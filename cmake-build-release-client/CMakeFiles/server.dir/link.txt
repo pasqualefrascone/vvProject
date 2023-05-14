@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/server.dir/myServer/server-main.cpp.o -o server  /usr/lib/x86_64-linux-gnu/libpq.so 

@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/client.dir/myClient/client-main.cpp.o -o client  /usr/lib/x86_64-linux-gnu/libpq.so 

@@ -1,0 +1,23 @@
+
+//#include <iostream>
+
+#include "../source/loggers/PostgreLogger.h"
+#include "MyClient.h"
+using namespace std;
+
+
+int main() {
+
+	// setting up log on postgres
+	const char * keywords[]={"host","port","dbname","user","password",NULL};
+	const char * values[]={"pdb","5432","sistema","client","password",NULL};
+
+	PostgreLogger *pgLogger=new PostgreLogger(1024,keywords,values);
+	pgLogger->startLogLoop();
+
+	MyClient client ("server0", 5000, 100,100,false,pgLogger);
+
+	client.start();
+
+	return 0;
+}
