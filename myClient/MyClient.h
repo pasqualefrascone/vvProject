@@ -48,6 +48,10 @@ public:
 				case 0:
 					std::cout<<"inserisci operando 1: ";
 					std::cin>>op1;
+                    if(cin.eof()){
+                        std::this_thread::sleep_for(std::chrono::seconds(4));
+                        return;
+                    }
 
 					//std::cout<<std::endl;
 					//if(std::cin.fail()){std::cin.clear();ignoreLine();std::cout<<"Illegal Input! :"<<std::cin.fail();<<std::endl;continue;}
@@ -75,7 +79,12 @@ public:
 				case 1:
 					std::cout<<"inserisci operando 2: ";
 					std::cin>>op2;
-					//std::cout<<std::endl;
+                    if(cin.eof()){
+                        std::this_thread::sleep_for(std::chrono::seconds(4));
+                        return;
+                    }
+
+                    //std::cout<<std::endl;
 					//if(std::cin.fail()){std::cin.clear();ignoreLine();std::cout<<"Illegal Input! "<<std::endl;continue;}
 
 					bs->addOnWriteBuffer(op2);

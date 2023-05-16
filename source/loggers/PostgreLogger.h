@@ -9,6 +9,7 @@
 
 #include <stdexcept>
 #include <thread>
+#include <cstring>
 #include "../postgresql/libpq-fe.h"
 #include "../loggers/PGcommand.h"
 #include "../fifo/CircularBuffer.h"
@@ -45,9 +46,14 @@ protected:
 			if(poll(dest, sizeof(PGcommand)) ==false){
 				std::this_thread::yield();
 			}else{
-				PGcommand *pgcom=static_cast<PGcommand*>(static_cast<void*>(dest) ) ;
-				PGresult *res=PQexecParams(conn, pgcom->command , pgcom->paramNum, pgcom->oids, pgcom->paramValues, NULL, NULL, 0);
-				if (/*ExecStatusType*/ (est=PQresultStatus(res) )!= PGRES_COMMAND_OK)
+				PGcommand *pgcom=static_cast<PGcommand*>(static_cast<void*>(dest) );
+                const char* values[30]; for(int i=0;i<pgcom->paramNum;i++){values[i]=pgcom->paramValues[i].data();}
+                //char **tmp=new char*[pgcom->paramNum]; for (int i=0;i<pgcom->paramNum;i++){tmp[i]=new char[30];std::strcpy(tmp[i],pgcom->paramValues[i].c_str()); values[i]=tmp[i];}
+                //for(int i=0;i<pgcom->paramNum;i++){pgcom->paramValues[i].copy(values[i],pgcom->paramValues[i].size());values[i][pgcom->paramValues[i].size()+1]='\0';}
+
+                PGresult *res=PQexecParams(conn, pgcom->command , pgcom->paramNum, pgcom->oids, values, NULL, NULL, 0);
+
+                if (/*ExecStatusType*/ (est=PQresultStatus(res) )!= PGRES_COMMAND_OK)
 				{
 				   	std::cerr<<"Insert failed: "<<PQresStatus(est)<<std::endl;
 				   	pgcom->printToStdOut();

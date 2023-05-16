@@ -12,21 +12,23 @@
 class MyServer: public TCPServer {
 private :
 	PostgreLogger *pgLogger;
+    std::string serverName;
+
 public:
-	MyServer(int pendingConnectionQueueSize,int localPort,unsigned int buffReaderSize,unsigned int buffWriterSize)
-	:TCPServer(pendingConnectionQueueSize, localPort, buffReaderSize, buffWriterSize),pgLogger(NULL) {}
+	MyServer(std::string serverName,int pendingConnectionQueueSize,int localPort,unsigned int buffReaderSize,unsigned int buffWriterSize)
+	:TCPServer(pendingConnectionQueueSize, localPort, buffReaderSize, buffWriterSize),pgLogger(NULL),serverName(serverName) {}
 
-	MyServer(int pendingConnectionQueueSize,int localPort,unsigned int buffReaderSize,unsigned int buffWriterSize,PostgreLogger *pgLogger)
-	:TCPServer(pendingConnectionQueueSize, localPort, buffReaderSize, buffWriterSize),pgLogger(pgLogger) {}
+	MyServer(std::string serverName,int pendingConnectionQueueSize,int localPort,unsigned int buffReaderSize,unsigned int buffWriterSize,PostgreLogger *pgLogger)
+	:TCPServer(pendingConnectionQueueSize, localPort, buffReaderSize, buffWriterSize),pgLogger(pgLogger),serverName(serverName) {}
 
 
-	MyServer(int localPort) 	:TCPServer(localPort),pgLogger(NULL){}
-	MyServer(int localPort,PostgreLogger *pgLogger) :TCPServer(localPort),pgLogger(pgLogger){}
+	MyServer(int localPort) 	:TCPServer(localPort),pgLogger(NULL),serverName(){}
+	MyServer(int localPort,PostgreLogger *pgLogger) :TCPServer(localPort),pgLogger(pgLogger),serverName(){}
 
 
 	virtual ~MyServer(){if(pgLogger!=NULL)delete pgLogger;};
 	virtual ClientHandler* getClientHandler(/*ClientHandler *dest,*/BufferedSocket *bs) override{
-		return new MyClientHandler(bs,pgLogger);
+		return new MyClientHandler(&serverName,bs,pgLogger);
 		//return MyClientHandler(bs);
 	}
 

@@ -18,18 +18,18 @@ public:
 	//PGcommand(const unsigned int paramNum, const char *command, const unsigned int *oids, const char **paramValues)
 	//:paramNum(paramNum),command(command),oids(oids),paramValues(paramValues){};
 	virtual ~PGcommand()
-	{delete[] oids; for(unsigned int i=0;i<paramNum;i++){delete[] paramValues[i];} delete [] paramValues;};
+	{delete[] oids; for(unsigned int i=0;i<paramNum;i++){/*delete[] paramValues[i];*/} delete [] paramValues;};
 
 	unsigned int paramNum;
 	const char *command;
 	unsigned int *oids;
-	char **paramValues;
+	std::string *paramValues;
 
 	void printToStdOut(){
 		using namespace std;
 		cout<<"-----PGCommand---------"<<endl;
-		cout<<paramNum<<endl;
-		cout<<command<<endl;
+		cout<<"paramNum: "<<paramNum<<endl;
+		cout<<"command: "<<command<<endl;
 		//cout<<paramValues[0]<<endl;
 
 		for(int i=0;i<4;i++)cout<<"paramValue: "<<paramValues[i]<<endl;
@@ -106,7 +106,7 @@ public:
 			std::copy(&this->oids[0], &this->oids[paramNum], product->oids);
 
 
-			product->paramValues=new char*[paramNum];
+			product->paramValues=new std::string [paramNum]{};
 			for (unsigned int i=0;i<paramNum;i++){
 				//copy in product.oids from this.oids
 
@@ -114,10 +114,13 @@ public:
 
 				//copy in paramValues from this.parValues
 				int len=strlen(parValues[i])+1;
-				product->paramValues[i]=new char[len];
+				//product->paramValues[i]=new char[len];
+                char *tmp=new char[len];
 				//std::cout<<"sizeofParv: "<<strlen(parValues[i])<<std::endl;
-				std::copy(parValues[i], &parValues[i][len], product->paramValues[i]);
-			}
+				std::copy(parValues[i], &parValues[i][len], tmp);
+                product->paramValues[i]=std::string(tmp);
+
+            }
 
 			PGcommand *tor=product;
 			reset();

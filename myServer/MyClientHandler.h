@@ -13,6 +13,10 @@
 
 #include <iostream>
 #include <thread>
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <string>
 #include "../source/loggers/PostgreLogger.h"
 #include "../source/utils/Util.h"
 #include "../source/utils/PostGresOid.h"
@@ -20,9 +24,31 @@
 class MyClientHandler: public ClientHandler {
 private:
     PostgreLogger *pgLogger;
+    std::string *serverName;
 public:
-	MyClientHandler(BufferedSocket *sock):ClientHandler(sock),pgLogger(NULL){}
-	MyClientHandler(BufferedSocket *sock,PostgreLogger *pgLogger):ClientHandler(sock),pgLogger(pgLogger){}
+
+	MyClientHandler(std::string *serverName,BufferedSocket *sock):ClientHandler(sock),pgLogger(NULL),serverName(serverName)
+    {
+        if (serverName == nullptr || serverName->size() == 0) {
+            char hostname[256];
+            if (gethostname(hostname, 256) == 0) {
+                this->serverName = new std::string (hostname);
+            } else {
+                std::cerr << "Failed to get hostname." << std::endl;
+            }
+        }
+    }
+	MyClientHandler(std::string *serverName,BufferedSocket *sock,PostgreLogger *pgLogger):ClientHandler(sock),pgLogger(pgLogger),serverName(serverName)
+    {
+        if (serverName == nullptr || serverName->size() == 0) {
+            char hostname[256];
+            if (gethostname(hostname, 256) == 0) {
+                this->serverName = new std::string (hostname);
+            } else {
+                std::cerr << "Failed to get hostname." << std::endl;
+            }
+        }
+    }
 
 	virtual ~MyClientHandler(){}
 
@@ -37,6 +63,7 @@ public:
     virtual void handle()     {
     	//std::cout<<"MyClientHandler: handling..."<<std::endl;
     	PGcommand *pgcomm;
+        std::string serverName(*(this->serverName));
 
     	    	//std::cout<<"MyClientHandler: handling..."<<std::endl;
     	    	/// INIZIO
@@ -54,7 +81,9 @@ public:
     	    		Util::getTimeStamp(timeStamp);
         	    	pgcomm=PGcommandBuilder().setParamNum(4)
     									->setPGCommand("INSERT INTO agent.logs(who,whenn,pc,log) VALUES($1,$2,$3,$4);")
-        	    			->addParVal("myServer")->addParVal(timeStamp)->addParVal(std::to_string(-1).data())->addParVal("myServer: ClientManager started")
+                            ->addParVal(this->serverName->data())
+                            ->addParVal(timeStamp)->addParVal(std::to_string(-1).data())
+                            ->addParVal((serverName+std::string(" : ClientManager started")).data())
         	    			->addOid(VARCHAR)->addOid(TIMESTAMP)-> addOid(INT2)->addOid(VARCHAR)
         	    			->build();
         	    	//std::cout<<"pgcomm builded sizeof(pgcomm):"<<sizeof(*pgcomm)<<std::endl;
@@ -105,8 +134,10 @@ public:
     	    				//print("myServer: time = "+String(time)+"; pc="+String(pc)+"; op1="+String(op1)+"\n");
     	        	    	pgcomm=PGcommandBuilder().setParamNum(4)
 											->setPGCommand("INSERT INTO agent.logs(who,whenn,pc,log) VALUES($1,$2,$3,$4);")
-    	        	    			->addParVal("myServer")->addParVal(timeStamp)->addParVal(std::to_string(pc).data())
-									->addParVal( ("myServer: op1="+std::to_string(op1)).data() )
+                                    ->addParVal(serverName.data())
+                                            ->addParVal(timeStamp)
+                                            ->addParVal(std::to_string(pc).data())
+									->addParVal( ( serverName+(" : op1="+std::to_string(op1))).data() )
     	        	    			->addOid(VARCHAR)->addOid(TIMESTAMP)-> addOid(INT2)->addOid(VARCHAR)
     	        	    			->build();
     	        	    	//std::cout<<"pgcomm builded sizeof(pgcomm):"<<sizeof(*pgcomm)<<std::endl;
@@ -134,8 +165,10 @@ public:
     	    				Util::getTimeStamp(timeStamp);
     	        	    	pgcomm=PGcommandBuilder().setParamNum(4)
 											->setPGCommand("INSERT INTO agent.logs(who,whenn,pc,log) VALUES($1,$2,$3,$4);")
-    	        	    			->addParVal("myServer")->addParVal(timeStamp)->addParVal(std::to_string(pc).data())
-									->addParVal( ("myServer: op2="+std::to_string(op2)).data() )
+                                    ->addParVal(this->serverName->data())
+                                    ->addParVal(timeStamp)
+                                    ->addParVal(std::to_string(pc).data())
+									->addParVal((serverName+(" : op2="+std::to_string(op2))).data() )
     	        	    			->addOid(VARCHAR)->addOid(TIMESTAMP)-> addOid(INT2)->addOid(VARCHAR)
     	        	    			->build();
     	        	    	//std::cout<<"pgcomm builded sizeof(pgcomm):"<<sizeof(*pgcomm)<<std::endl;
@@ -160,8 +193,10 @@ public:
     	    				Util::getTimeStamp(timeStamp);
     	        	    	pgcomm=PGcommandBuilder().setParamNum(4)
 											->setPGCommand("INSERT INTO agent.logs(who,whenn,pc,log) VALUES($1,$2,$3,$4);")
-    	        	    			->addParVal("myServer")->addParVal(timeStamp)->addParVal(std::to_string(pc).data())
-									->addParVal( ("myServer: op1-op2=res"+std::to_string(res)).data() )
+                                    ->addParVal(this->serverName->data())
+                                    ->addParVal(timeStamp)
+                                    ->addParVal(std::to_string(pc).data())
+									->addParVal( (serverName+(" : op1-op2=res"+std::to_string(res))).data() )
     	        	    			->addOid(VARCHAR)->addOid(TIMESTAMP)-> addOid(INT2)->addOid(VARCHAR)
     	        	    			->build();
     	        	    	//std::cout<<"pgcomm builded sizeof(pgcomm):"<<sizeof(*pgcomm)<<std::endl;

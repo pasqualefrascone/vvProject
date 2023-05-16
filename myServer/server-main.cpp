@@ -3,6 +3,8 @@
 
 #include "../source/loggers/PostgreLogger.h"
 #include "../source/connprotocol/TCPServer.h"
+#include <climits>
+#include <cstdlib>
 #include "MyServer.h"
 using namespace std;
 
@@ -21,7 +23,7 @@ using namespace std;
 #include <sys/socket.h>
 #include <netdb.h>
 
-int main() {
+int main(int argc, char *argv[]) {
 
 //    const char* hostname = "pdb";  // Sostituisci con l'hostname desiderato
 //    std::cout<<"cerco "<<hostname<<std::endl;
@@ -59,7 +61,26 @@ int main() {
 //
 //    return 0;
 
-	// setting up log on postgres
+    if (argc != 3) {
+        std::cout << "Usage: ./server serverName port" << std::endl;
+        return 1;
+    }
+
+    char* serverName = argv[1];
+    char* portStr = argv[2];
+
+    unsigned long int portUL = 0;
+    char* endPtr;
+    portUL = std::strtoul(portStr, &endPtr, 10);
+
+    if (*endPtr != '\0' || portUL > USHRT_MAX) {
+        std::cout << "Invalid port number. Usage: ./server port" << std::endl;
+        return 1;
+    }
+
+    unsigned short int serverPort = static_cast<unsigned short int>(portUL);
+
+        // setting up log on postgres
 	const char * keywords[]={"host","port","dbname","user","password",NULL};
 	const char * values[]={"pdb","5432","sistema","server","password",NULL};
 
@@ -68,7 +89,7 @@ int main() {
 
 
 
-	MyServer server(5,5000,100,100,pgLogger);
+	MyServer server(serverName,5,serverPort,100,100,pgLogger);
 	server.start();
 
 	return 0;
