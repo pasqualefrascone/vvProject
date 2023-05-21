@@ -36,28 +36,8 @@ RUN apt-get update \
 
 RUN apt-get upgrade cmake -y
 
-RUN ( \
-    echo 'LogLevel DEBUG2'; \
-    echo 'PermitRootLogin yes'; \
-    echo 'PasswordAuthentication yes'; \
-    echo 'Subsystem sftp /usr/lib/openssh/sftp-myServer'; \
-  ) > /etc/ssh/sshd_server \
-  && mkdir /run/sshd
 
-RUN useradd -m user \
-  && yes password | passwd user
 
-RUN usermod -s /bin/bash user
 
-RUN mkdir /app
-WORKDIR /app
-COPY cmake-build-release-client /app
-WORKDIR cmake-build-release-client
-RUN ls
-RUN cmake .
-RUN make
-RUN ls
 
 CMD ["sleep", "infinity"]
-
-#CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_server"]

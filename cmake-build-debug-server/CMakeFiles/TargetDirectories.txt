@@ -1,4 +1,0 @@
-/tmp/vvProject/cmake-build-debug-server/CMakeFiles/server.dir
-/tmp/vvProject/cmake-build-debug-server/CMakeFiles/client.dir
-/tmp/vvProject/cmake-build-debug-server/CMakeFiles/edit_cache.dir
-/tmp/vvProject/cmake-build-debug-server/CMakeFiles/rebuild_cache.dir

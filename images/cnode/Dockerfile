@@ -36,6 +36,9 @@ RUN apt-get update \
 
 RUN apt-get upgrade cmake -y
 
+RUN mkdir /vv
+COPY .. /vv
+
 RUN ( \
     echo 'LogLevel DEBUG2'; \
     echo 'PermitRootLogin yes'; \
@@ -49,15 +52,14 @@ RUN useradd -m user \
 
 RUN usermod -s /bin/bash user
 
-RUN mkdir /app
+COPY .. /app
 WORKDIR /app
-COPY cmake-build-release-client /app
-WORKDIR cmake-build-release-client
-RUN ls
+
 RUN cmake .
 RUN make
-RUN ls
+RUN find . -maxdepth 1 ! -name 'server' ! -name 'client' ! -name '.' ! -name '..' -exec rm -rf {} +
 
 CMD ["sleep", "infinity"]
+
 
 #CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_server"]
