@@ -66,7 +66,7 @@ fi
 if [ $1 == dev ]; then
     #create network if don't exists
     createNetworkIfNotExist ${netName}
-    echo "starting pdb container..."
+    echo "starting ${postgresContName} container..."
     docker run --rm -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName pdb
     echo "execution time: $execution_time seconds"
 
@@ -75,7 +75,7 @@ elif [ $1 == deploy ];  then
     createNetworkIfNotExist ${netName}
 
   echo "creating and starting containers.... "
-      docker run -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName pdb
+    docker run --rm -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName pdb
       echo "parm num $#"
       if [ "$#" -ge 2 ];
       then
@@ -101,7 +101,6 @@ elif [ $1 == "$clean" ]; then
     docker rmi $cnodeImageName
     echo "stopping $postgresContName container"
     docker container stop $postgresContName
-    echo "execution time: $execution_time seconds"
   fi
 fi
 

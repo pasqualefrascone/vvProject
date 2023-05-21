@@ -16,15 +16,35 @@ using namespace std;
 class MyClient: public Client {
 private:
 	PostgreLogger *pgLogger;
+    std::string clientName;
 public:
 	MyClient(char* hostAddress,unsigned short hostPort, unsigned int sizeOfRbuff,unsigned int sizeOfWbuff,bool looping)
-	:Client(hostAddress, hostPort, sizeOfRbuff, sizeOfWbuff, looping),pgLogger(NULL){}
+	:Client(hostAddress, hostPort, sizeOfRbuff, sizeOfWbuff, looping),pgLogger(NULL)
+    {
+        char hostname[256];
+        if (gethostname(hostname, 256) == 0) {
+            this->clientName =  std::string (hostname);
+        } else {
+            std::cerr << "Failed to get hostname." << std::endl;
+            this->clientName =  std::string ("client");
+        }
+    }
 
 	MyClient(char* hostAddress,unsigned short hostPort, unsigned int sizeOfRbuff,unsigned int sizeOfWbuff,bool looping,PostgreLogger *pgLogger)
-	:Client(hostAddress, hostPort, sizeOfRbuff, sizeOfWbuff, looping),pgLogger(pgLogger){}
+	:Client(hostAddress, hostPort, sizeOfRbuff, sizeOfWbuff, looping),pgLogger(pgLogger)
+    {
+        char hostname[256];
+        if (gethostname(hostname, 256) == 0) {
+            this->clientName =  std::string (hostname);
+        } else {
+            std::cerr << "Failed to get hostname." << std::endl;
+            this->clientName =  std::string ("client");
+        }
+
+    }
 
 
-	virtual ~MyClient(){if(pgLogger!=NULL)delete pgLogger;};
+	virtual ~MyClient(){if(pgLogger!=NULL){delete pgLogger;} ;};
 
 	virtual void ignoreLine(){
 		    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -40,7 +60,8 @@ public:
 
 
 
-		PGcommand *pgcomm;
+
+        PGcommand *pgcomm;
     	char timeStamp[27];//Util::getTimeStamp(timeStamp);
 
 		while(true){
@@ -68,7 +89,7 @@ public:
 					snprintf(logmsg,50,"%s%d","write fifo data: ",op1);
 					pgcomm=PGcommandBuilder().setParamNum(4)
 							->setPGCommand("INSERT INTO agent.logs(who,whenn,pc,log) VALUES($1,$2,$3,$4);")
-							->addParVal("client")->addParVal(timeStamp)->addParVal(std::to_string(pc).data())->addParVal(logmsg)
+							->addParVal(clientName.data())->addParVal(timeStamp)->addParVal(std::to_string(pc).data())->addParVal(logmsg)
 							->addOid(VARCHAR)->addOid(TIMESTAMP)-> addOid(INT2)->addOid(VARCHAR)
 							->build();
 					pgLogger->add(static_cast<char*>(static_cast<void*>(pgcomm)),sizeof(*pgcomm));
@@ -99,7 +120,7 @@ public:
 					snprintf(logmsg,50,"%s%d","write fifo data: ",op2) ;
 					pgcomm=PGcommandBuilder().setParamNum(4)
 								->setPGCommand("INSERT INTO agent.logs(who,whenn,pc,log) VALUES($1,$2,$3,$4);")
-							->addParVal("client")->addParVal(timeStamp)->addParVal(std::to_string(pc).data())->addParVal(logmsg)
+							->addParVal(clientName.data())->addParVal(timeStamp)->addParVal(std::to_string(pc).data())->addParVal(logmsg)
 							->addOid(VARCHAR)->addOid(TIMESTAMP)-> addOid(INT2)->addOid(VARCHAR)
 							->build();
 					pgLogger->add(static_cast<char*>(static_cast<void*>(pgcomm)),sizeof(*pgcomm));
@@ -127,7 +148,7 @@ public:
 					snprintf(logmsg,50,"%s%d","op1-op2: ",res);
 					pgcomm=PGcommandBuilder().setParamNum(4)
 								->setPGCommand("INSERT INTO agent.logs(who,whenn,pc,log) VALUES($1,$2,$3,$4);")
-							->addParVal("client")->addParVal(timeStamp)->addParVal(std::to_string(pc).data())->addParVal(logmsg)
+							->addParVal(clientName.data())->addParVal(timeStamp)->addParVal(std::to_string(pc).data())->addParVal(logmsg)
 							->addOid(VARCHAR)->addOid(TIMESTAMP)-> addOid(INT2)->addOid(VARCHAR)
 							->build();
 					pgLogger->add(static_cast<char*>(static_cast<void*>(pgcomm)),sizeof(*pgcomm));

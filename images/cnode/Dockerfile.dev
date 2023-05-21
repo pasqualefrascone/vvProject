@@ -28,7 +28,7 @@ RUN apt-get update \
       autoconf \
       automake \
       locales-all \
-#      dos2unix \
+      dos2unix \
 #      rsync \
 #      tar \
       libpq-dev \
@@ -37,6 +37,18 @@ RUN apt-get update \
 RUN apt-get upgrade cmake -y
 
 
+RUN ( \
+    echo 'LogLevel DEBUG2'; \
+    echo 'PermitRootLogin yes'; \
+    echo 'PasswordAuthentication yes'; \
+    echo 'Subsystem sftp /usr/lib/openssh/sftp-myServer'; \
+  ) > /etc/ssh/sshd_server \
+  && mkdir /run/sshd
+
+RUN useradd -m user \
+  && yes password | passwd user
+
+RUN usermod -s /bin/bash user
 
 
 
