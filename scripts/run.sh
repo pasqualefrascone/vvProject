@@ -7,6 +7,7 @@ deploy="deploy"
 clean="clean"
 
 postgresContName="pdb"
+postgresVolName="data"
 cnodeContName="cnode"
 netName="mynet"
 start_time=$(date +%s.%N)
@@ -26,7 +27,7 @@ echo "execution time: $execution_time seconds"
 createNetworkIfNotExist(){
 if ! docker network ls | awk -v parametro="$1" '$3==parametro {print $3}' | grep -q .
 then
-  echo "creating network for postgres.."
+  echo "creating network ${netName}... "
   docker network create $1
 fi
 }
@@ -34,15 +35,16 @@ fi
 deleteNetworkIfExist(){
   if  docker network ls | awk -v parametro="$1" '$3==parametro {print $3}' | grep -q .
   then
-    echo "deleting postgres network.."
+    echo "deleting network ${netName}.."
     docker network rm $1
   fi
 
 }
 
 stopContainerBeginWith(){
+  echo "stopping $cnodeContName* containers..."
 
-  container_ids=$(docker ps -aq --filter "name=cnode*")
+  container_ids=$(docker ps -aq --filter "name=$1*")
 
   # Controlla se ci sono container da stoppare
   if [ -n "$container_ids" ]; then
@@ -65,7 +67,7 @@ if [ $1 == dev ]; then
     #create network if don't exists
     createNetworkIfNotExist ${netName}
     echo "starting pdb container..."
-    docker run -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName pdb
+    docker run --rm -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName pdb
     echo "execution time: $execution_time seconds"
 
 elif [ $1 == deploy ];  then
@@ -75,26 +77,30 @@ elif [ $1 == deploy ];  then
   echo "creating and starting containers.... "
       docker run -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName pdb
       echo "parm num $#"
-      if [ $# -ge 2 ];
+      if [ "$#" -ge 2 ];
       then
-        for((i=0;i<second_param;i++)); do
-          docker run -d --rm --network $netName --name cnode$i cnode
+        for((i=0;i<$2;i++)); do
+          echo "starting $cnodeContName$i ..."
+          docker run -d --rm --network $netName --name $cnodeContName$i cnode
         done
       else
-          docker run -d --rm --network $netName --name cnode0 cnode
+          docker run -d --rm --network $netName --name $cnodeContName0 cnode
       fi
 
 
 elif [ $1 == "$clean" ]; then
-  if [ $2 == dev ]; then
-    echo "cleaning dev images..."
-    docker rmi $postgresImageName
-    docker rmi $cnodeDevImageName
+  if [ $# -lt 2 ]; then
+    echo "Must specified at least one of the following set of parameter for clean option: nodes | all ]."
+    exit 1
+  fi
+  if [ $2 == nodes ]; then
+    stopContainerBeginWith $cnodeContName
     echo "execution time: $execution_time seconds"
-  elif [ $2 == deploy ];  then
-    echo "cleaning deployable images..."
-    docker rmi $postgresImageName
+  elif [ $2 == all ];  then
+    stopContainerBeginWith $cnodeContName
     docker rmi $cnodeImageName
+    echo "stopping $postgresContName container"
+    docker container stop $postgresContName
     echo "execution time: $execution_time seconds"
   fi
 fi

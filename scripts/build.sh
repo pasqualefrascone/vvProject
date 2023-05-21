@@ -9,7 +9,7 @@ clean="clean"
 postgresImageName="pdb"
 cnodeDevImageName="cnodedev"
 cnodeImageName="cnode"
-pdbVolumeName="data"
+postgresVolName="data"
 
 start_time=$(date +%s.%N)
 
@@ -57,14 +57,14 @@ if [ $1 == dev ]; then
     docker build -t $postgresImageName -f images/postgres/Dockerfile .
     docker build -t $cnodeDevImageName -f images/cnode/Dockerfile.dev .
     echo "execution time: $execution_time seconds"
-    createIfVolumeNotExist $pdbVolumeName
+    createIfVolumeNotExist $postgresVolName
     
 elif [ $1 == deploy ];  then
   echo "building deploy images.."
   echo $(pwd)
   docker build -t $postgresImageName -f images/postgres/Dockerfile .
   docker build -t $cnodeImageName -f images/cnode/Dockerfile .
-  createIfVolumeNotExist $pdbVolumeName
+  createIfVolumeNotExist $postgresVolName
 
 
 elif [ $1 == "$clean" ]; then
@@ -83,7 +83,7 @@ elif [ $1 == "$clean" ]; then
     docker rmi $postgresImageName
     docker rmi $cnodeDevImageName
     docker rmi $cnodeImageName
-    deleteVolumeIfExist $pdbVolumeName
+    deleteVolumeIfExist $postgresVolName
   fi
 fi
 

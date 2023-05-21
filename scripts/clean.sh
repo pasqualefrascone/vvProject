@@ -2,10 +2,12 @@
 
 #run this script from vvProject folder: ./scripts/run.sh [dev | deploy [numberOfCnode] ]
 
+## option ##
 dev="dev"
 deploy="deploy"
 clean="clean"
 
+## static parameter ##
 postgresContName="pdb"
 cnodeContName="cnode"
 
