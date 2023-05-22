@@ -2,7 +2,7 @@
  * CircularBuffer.h
  *
  *  a thread safe circular buffer.
- *      Author: pasquale
+ *      Author: michelangelo
  */
 
 #ifndef FIFO_CIRCULARBUFFER_H_
@@ -21,7 +21,7 @@ protected:
 	char *buffer;
 	unsigned int oldest; //placeholder  for reader( poll, peek)
 	unsigned int newest; //placeholder for writer (add)
-	unsigned int occupiedBytes;
+	unsigned int occupiedBytes; //this value change when add or poll
 
 	/**
 	 *  [  1 2 3 4 5 6 7 8 9 ]	 *
@@ -39,8 +39,8 @@ protected:
 	 */
 	virtual int bytesCanContiguouslyWrite() final{
 
-		if (newest>oldest) return fifoSize-newest; //write from newest until fifosize
-		else if(newest<oldest) return oldest-newest; //write from newesto until oldest
+		if (newest>oldest) return fifoSize-newest; //write from newest to fifosize
+		else if(newest<oldest) return oldest-newest; //write from newesto to oldest
 		else /*if(newest==oldest)*/{
 				bool full=occupiedBytes==fifoSize;
 				bool empt=occupiedBytes==0;
@@ -209,7 +209,7 @@ public:
 
 		mu->lock();
 		unsigned int freeBytes=(fifoSize-occupiedBytes);
-		if(freeBytes<sizeOfAdding){  // there is not enought free bytes to write
+		if(freeBytes<sizeOfAdding){  /** there is not enought free bytes to write*/
 			//std::cout<<"FULL"<<std::endl;
 			//loga("no byte for write. ");
 			mu->unlock();
@@ -263,22 +263,33 @@ public:
 		}
 
 	}
-	/*//for debugging purpose
-		void logp(std::string pref){
-			using namespace std;
-			std::string tow("");
-			tow+=pref+" . newest: "+to_string(newest)+", oldest: "+to_string(oldest)+", occb: "+to_string(occupiedBytes);
-			//pollf <<tow<<std::endl;
 
-		}
-		void loga(std::string pref){
-			using namespace std;
-			std::string tow("");
-			tow+=pref+" . newest: "+to_string(newest)+", oldest: "+to_string(oldest)+", occb: "+to_string(occupiedBytes);
-			//addf <<tow<<std::endl;
 
-		}
-	*/
+    virtual bool isEmpty(){
+        bool result=false;
+        mu->lock();
+        if(occupiedBytes==0) result=true;
+        else result=false;
+        return result;
+    }
+
+
+        /*//for debugging purpose
+            void logp(std::string pref){
+                using namespace std;
+                std::string tow("");
+                tow+=pref+" . newest: "+to_string(newest)+", oldest: "+to_string(oldest)+", occb: "+to_string(occupiedBytes);
+                //pollf <<tow<<std::endl;
+
+            }
+            void loga(std::string pref){
+                using namespace std;
+                std::string tow("");
+                tow+=pref+" . newest: "+to_string(newest)+", oldest: "+to_string(oldest)+", occb: "+to_string(occupiedBytes);
+                //addf <<tow<<std::endl;
+
+            }
+        */
 
 
 };

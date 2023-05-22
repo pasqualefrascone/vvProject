@@ -81,10 +81,10 @@ elif [ $1 == deploy ];  then
       then
         for((i=0;i<$2;i++)); do
           echo "starting $cnodeContName$i ..."
-          docker run -d --rm --network $netName --name $cnodeContName$i cnode
+          docker run -d --rm --network $netName --name $cnodeContName$i -h $cnodeContName$i cnode
         done
       else
-          docker run -d --rm --network $netName --name $cnodeContName0 cnode
+          docker run -d --rm --network $netName --name $cnodeContName0 -h $cnodeContName0 cnode
       fi
 
 
@@ -95,10 +95,8 @@ elif [ $1 == "$clean" ]; then
   fi
   if [ $2 == nodes ]; then
     stopContainerBeginWith $cnodeContName
-    echo "execution time: $execution_time seconds"
   elif [ $2 == all ];  then
     stopContainerBeginWith $cnodeContName
-    docker rmi $cnodeImageName
     echo "stopping $postgresContName container"
     docker container stop $postgresContName
   fi

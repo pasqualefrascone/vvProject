@@ -40,7 +40,6 @@ public:
             std::cerr << "Failed to get hostname." << std::endl;
             this->clientName =  std::string ("client");
         }
-
     }
 
 
@@ -64,14 +63,15 @@ public:
         PGcommand *pgcomm;
     	char timeStamp[27];//Util::getTimeStamp(timeStamp);
 
-		while(true){
+        bool flag=true;
+		while(flag){
 			switch (pc) {
 				case 0:
 					std::cout<<"inserisci operando 1: ";
 					std::cin>>op1;
                     if(cin.eof()){
-                        std::this_thread::sleep_for(std::chrono::seconds(4));
-                        return;
+                        flag=false;
+                        break;
                     }
 
 					//std::cout<<std::endl;
@@ -82,7 +82,7 @@ public:
 				case 30:
 					bs->writeSignal();
 					//print("client: time = "+String(time)+"; pc="+String(pc)+"; op1: writefifodata[1]="+String(writefifodata[1])+"\n");
-
+                    pc=1;
 					if (pgLogger==NULL) break;
 					Util::getTimeStamp(timeStamp);
 					memset(logmsg,'\0',50);//Util::resetCharBuf(logmsg, sizeof(logmsg));
@@ -94,15 +94,14 @@ public:
 							->build();
 					pgLogger->add(static_cast<char*>(static_cast<void*>(pgcomm)),sizeof(*pgcomm));
 
-					pc=1;
 
 					break;
 				case 1:
 					std::cout<<"inserisci operando 2: ";
 					std::cin>>op2;
                     if(cin.eof()){
-                        std::this_thread::sleep_for(std::chrono::seconds(4));
-                        return;
+                        flag=false;
+                        break;
                     }
 
                     //std::cout<<std::endl;
@@ -113,7 +112,9 @@ public:
 					break;
 				case 40:
 					bs->writeSignal();
-					//print("client: time = "+String(time)+"; pc="+String(pc)+"; op2: writefifodata[1]="+String(writefifodata[1])+"\n");
+                    pc=2;
+
+                    //print("client: time = "+String(time)+"; pc="+String(pc)+"; op2: writefifodata[1]="+String(writefifodata[1])+"\n");
 					if (pgLogger==NULL) break;
 					Util::getTimeStamp(timeStamp);
 					memset(logmsg,'\0',50);//Util::resetCharBuf(logmsg, sizeof(logmsg));
@@ -125,14 +126,14 @@ public:
 							->build();
 					pgLogger->add(static_cast<char*>(static_cast<void*>(pgcomm)),sizeof(*pgcomm));
 
-					pc=2;
 					break;
 				case 2:
-					bs->readSignal();
-					pc=20;
-					break;
+                    bs->readSignal();
+                    pc=20;
+                    break;
 				case 20:
-					while(true){
+                    pc=0;
+                    while(true){//waiting for server
 						//std::cout<<"provo a pollare : "<<std::endl;
 						if(!bs->pollFromReadBuffer(res)) std::this_thread::yield();//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 						else break;
@@ -152,7 +153,6 @@ public:
 							->addOid(VARCHAR)->addOid(TIMESTAMP)-> addOid(INT2)->addOid(VARCHAR)
 							->build();
 					pgLogger->add(static_cast<char*>(static_cast<void*>(pgcomm)),sizeof(*pgcomm));
-					pc=0;
 
 					break;
 
@@ -161,7 +161,7 @@ public:
 			}
 		}
 
-		//pgLogger->stopWritingOnFd();
+		if(pgLogger!=NULL)pgLogger->stopLogLoop();
 
 	}
 
