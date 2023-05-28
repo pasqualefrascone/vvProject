@@ -19,7 +19,7 @@
 #
 # Author: [Your Name]
 
-#./scripts/build.sh deploy
+./scripts/build.sh deploy
 ./scripts/run.sh deploy 20
 echo "Waiting for the PostgreSQL container..."
 sleep 20
