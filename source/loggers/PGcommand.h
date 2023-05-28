@@ -18,7 +18,7 @@ public:
 	//PGcommand(const unsigned int paramNum, const char *command, const unsigned int *oids, const char **paramValues)
 	//:paramNum(paramNum),command(command),oids(oids),paramValues(paramValues){};
 	virtual ~PGcommand()
-	{delete[] oids; for(unsigned int i=0;i<paramNum;i++){/*delete[] paramValues[i];*/} delete [] paramValues;};
+	{/*delete[] oids; for(unsigned int i=0;i<paramNum;i++){delete paramValues[i];} delete [] paramValues;*/};
 
 	unsigned int paramNum;
 	const char *command;

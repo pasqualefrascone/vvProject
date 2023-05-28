@@ -67,6 +67,24 @@ elif [ $1 == deploy ];  then
   docker build -t $cnodeImageName -f images/cnode/Dockerfile .
   createIfVolumeNotExist $postgresVolName
 
+elif [ $1 == all ];  then
+    echo "building dev images..."
+    echo "build -t $postgresImageName -f images/postgres/Dockerfile ."
+    docker build -t $postgresImageName -f images/postgres/Dockerfile .
+    echo "docker build -t $serverImageDebugName -f images/cnode/Dockerfile.dev ."
+    docker build -t $serverImageDebugName -f images/cnode/Dockerfile.dev .
+    echo "docker build -t $clientImageDebugName -f images/cnode/Dockerfile.dev ."
+  docker build -t $clientImageDebugName -f images/cnode/Dockerfile.dev .
+
+
+
+  echo "building deploy images.."
+  echo "build -t $postgresImageName -f images/postgres/Dockerfile ."
+  docker build -t $postgresImageName -f images/postgres/Dockerfile .
+  echo "docker build -t $cnodeImageName -f images/cnode/Dockerfile.dev ."
+  docker build -t $cnodeImageName -f images/cnode/Dockerfile .
+  createIfVolumeNotExist $postgresVolName
+
 
 elif [ $1 == "$clean" ]; then
   if [ $2 == dev ]; then

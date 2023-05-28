@@ -16,8 +16,7 @@ FROM ubuntu:22.04
 RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get -y install tzdata
 
 RUN apt-get update \
-  && apt-get install -y ssh \
-      build-essential \
+  && apt-get install -y build-essential \
       gcc \
       g++ \
       gdb \
@@ -28,6 +27,8 @@ RUN apt-get update \
       autoconf \
       automake \
       locales-all \
+      valgrind \
+      #ssh \
 #      dos2unix \
 #      rsync \
 #      tar \
@@ -36,16 +37,16 @@ RUN apt-get update \
 
 RUN apt-get upgrade cmake -y
 
-RUN mkdir /vv
-COPY .. /vv
+#RUN mkdir /vv
+#COPY .. /vv
 
-RUN ( \
-    echo 'LogLevel DEBUG2'; \
-    echo 'PermitRootLogin yes'; \
-    echo 'PasswordAuthentication yes'; \
-    echo 'Subsystem sftp /usr/lib/openssh/sftp-myServer'; \
-  ) > /etc/ssh/sshd_server \
-  && mkdir /run/sshd
+#RUN ( \
+#    echo 'LogLevel DEBUG2'; \
+#    echo 'PermitRootLogin yes'; \
+#    echo 'PasswordAuthentication yes'; \
+#    echo 'Subsystem sftp /usr/lib/openssh/sftp-myServer'; \
+#  ) > /etc/ssh/sshd_server \
+#  && mkdir /run/sshd
 
 RUN useradd -m user \
   && yes password | passwd user

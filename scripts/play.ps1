@@ -9,4 +9,6 @@ if ($args[0] -eq "start") {
     #Get-Content numeri.txt | docker exec -i cnode2 ./client cnode0 5000 > $null 2>&1
     #Get-Content numeri.txt | docker exec -i cnode3 ./client cnode0 5000 > $null 2>&1
     Write-Host "done play"
+
+
 }

@@ -61,8 +61,6 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-
-
 if [ $1 == dev ]; then
     #create network if don't exists
     createNetworkIfNotExist ${netName}
@@ -99,6 +97,7 @@ elif [ $1 == "$clean" ]; then
     stopContainerBeginWith $cnodeContName
     echo "stopping $postgresContName container"
     docker container stop $postgresContName
+    deleteNetworkIfExist $netName
   fi
 fi
 

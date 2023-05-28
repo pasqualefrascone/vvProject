@@ -61,6 +61,7 @@ protected:
 				   	pgcom->printToStdOut();
 				}
 				//memset(dest,0,sizeof(PGcommand));
+                //delete pgcom;
 			}
 		}  // exiting
 		isLooping=false;
