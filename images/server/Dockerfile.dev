@@ -1,7 +1,7 @@
 # CLion remote docker environment (How to build docker container, run and stop it)
 #
 # Build and run:
-#   docker build -t client -f images/client/Dockerfile .
+#   docker build -t server -f images/server/Dockerfile.dev .
 #   docker run -d --cap-add sys_ptrace -p 127.0.0.1:2222:22 --name server0 myServer
 #   ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[localhost]:2222"
 #
@@ -49,15 +49,4 @@ RUN useradd -m user \
 
 RUN usermod -s /bin/bash user
 
-RUN mkdir /app
-WORKDIR /app
-COPY cmake-build-release-client /app
-WORKDIR cmake-build-release-client
-RUN ls
-RUN cmake .
-RUN make
-RUN ls
-
-CMD ["sleep", "infinity"]
-
-#CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_server"]
+CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_server"]

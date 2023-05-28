@@ -16,8 +16,7 @@ FROM ubuntu:22.04
 RUN DEBIAN_FRONTEND="noninteractive" apt-get update && apt-get -y install tzdata
 
 RUN apt-get update \
-  && apt-get install -y ssh \
-      build-essential \
+  && apt-get install -y build-essential \
       gcc \
       g++ \
       gdb \
@@ -28,6 +27,8 @@ RUN apt-get update \
       autoconf \
       automake \
       locales-all \
+      valgrind \
+      #ssh \
 #      dos2unix \
 #      rsync \
 #      tar \
@@ -36,28 +37,30 @@ RUN apt-get update \
 
 RUN apt-get upgrade cmake -y
 
-RUN ( \
-    echo 'LogLevel DEBUG2'; \
-    echo 'PermitRootLogin yes'; \
-    echo 'PasswordAuthentication yes'; \
-    echo 'Subsystem sftp /usr/lib/openssh/sftp-myServer'; \
-  ) > /etc/ssh/sshd_server \
-  && mkdir /run/sshd
+#RUN mkdir /vv
+#COPY .. /vv
+
+#RUN ( \
+#    echo 'LogLevel DEBUG2'; \
+#    echo 'PermitRootLogin yes'; \
+#    echo 'PasswordAuthentication yes'; \
+#    echo 'Subsystem sftp /usr/lib/openssh/sftp-myServer'; \
+#  ) > /etc/ssh/sshd_server \
+#  && mkdir /run/sshd
 
 RUN useradd -m user \
   && yes password | passwd user
 
 RUN usermod -s /bin/bash user
 
-RUN mkdir /app
+COPY .. /app
 WORKDIR /app
-COPY cmake-build-release-client /app
-WORKDIR cmake-build-release-client
-RUN ls
+
 RUN cmake .
 RUN make
-RUN ls
+RUN find . -maxdepth 1 ! -name 'server' ! -name 'client' ! -name '.' ! -name '..' -exec rm -rf {} +
 
 CMD ["sleep", "infinity"]
+
 
 #CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_server"]

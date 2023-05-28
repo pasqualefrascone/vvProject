@@ -11,7 +11,7 @@ using namespace std;
 int main(int argc,char* argv[]) {
 
     if (argc != 3) {
-        std::cout << "Usage: ./client hostname port" << std::endl;
+        std::cout << "Usage: ./client serverHostname port" << std::endl;
         return 1;
     }
 

@@ -32,11 +32,12 @@ protected:
 	PGconn *conn;
 	bool stopFlag;
 	bool isLooping;
+    bool isRecursing;
 
 	virtual void logOnPostGres()
 	{
 		isLooping=true;
-
+        if(isRecursing)stopFlag=false;
 		//std::cout<<"PostgreLogger::logOnPostGres iniziato"<<std::endl;
 		ExecStatusType est;
 		char dest[sizeof(PGcommand)];
@@ -44,6 +45,7 @@ protected:
 		while(stopFlag!=true){
 
 			if(poll(dest, sizeof(PGcommand)) ==false){
+                if(isRecursing) {stopFlag=true;return;}
 				std::this_thread::yield();
 			}else{
 				PGcommand *pgcom=static_cast<PGcommand*>(static_cast<void*>(dest) );
@@ -59,10 +61,12 @@ protected:
 				   	pgcom->printToStdOut();
 				}
 				//memset(dest,0,sizeof(PGcommand));
+                //delete pgcom;
 			}
-		}
+		}  // exiting
 		isLooping=false;
-		std::cout<<"PostgreLogger::logOnPostGres finito"<<std::endl;
+        if( !this->isEmpty()) {isRecursing=true;logOnPostGres();}
+		std::cout<<"PostgreLogger::logOnPostGres ended"<<std::endl;
 	}
 
 
@@ -75,8 +79,8 @@ public:
 		//consFlag=false;
 		//turno=0;//1 per producer 2 per consumer
 		stopFlag=false;
-
-
+        isLooping=false;
+        isRecursing=false;
 	}
 
 	PostgreLogger(unsigned int fifoSize, const char * keywords[],const char * values[])
@@ -86,6 +90,8 @@ public:
 		//consFlag=false;
 		//turno=0;//1 per producer 2 per consumer
 		stopFlag=false;
+        isLooping=false;
+        isRecursing=false;
 
 		conn=PQconnectdbParams(keywords, values, 1);
         char *feedback;
@@ -98,7 +104,7 @@ public:
                     break;
 
                 case CONNECTION_STARTED:
-                    feedback = "Connecting...";
+                    feedback = "Connecting to dbms...";
                     break;
 
                 case CONNECTION_MADE:
@@ -109,7 +115,7 @@ public:
                     flag=false;
                     break;
                 default:
-                    feedback = "Connecting...";
+                    feedback = "Connecting to dbms...";
             }
             std::cout<<feedback<<std::endl;
         }
