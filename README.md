@@ -1,71 +1,78 @@
 # vvProject
 
+## Overview
+This readme provides an overview of the project, describes its structure, and explains how to run the project using C++, CMake, and Docker. The project consists of a C++ application that implements a TCP server with associated clients. The client sends two integers, and the server responds with the difference between the received integer pairs. Both types of nodes share most of the code, which can be found in the "source" folder. In the "source" folder, in the "protocol" subfolder, you can find the abstract classes "Client," "TCPServer," and "ClientHandler," which are extended respectively in the "myClient" and "myServer" subfolders.
 
+## Execution Instructions
+To run the project, follow these steps:
 
-# Readme per il progetto C++, CMake, Docker
+1. Ensure that CMake and Docker are installed on your system.
+2. Clone the project repository to your computer.
+3. Open a terminal and navigate to the project directory.
 
-Questo readme fornisce una panoramica del progetto, descrive la sua struttura e spiega come eseguire il progetto utilizzando C++, CMake e Docker. Il progetto consiste in un'applicazione C++ che implementa un server TCP con client associati.
+### Building Docker Images
+4. Run the `build.sh` script in the `scripts` folder. This script will build the necessary Docker images for the project, as specified in their respective Dockerfiles.
+   Please refer to the usage in the initial comment of the script for more information.
 
-## Struttura del progetto
+### Running the Project
+5. Run the `run.sh` script in the `scripts` folder. This script will build and run the required Docker containers for the project, as well as create the appropriate Docker network.
+   Please refer to the usage in the initial comment of the script for more information.
 
-Il progetto è organizzato come segue:
+### Scenario Simulation
+
+Optionally, you can run the `play.sh` script in the scripts folder to simulate a predefined scenario where there is a server and multiple clients communicating with the server.
+
+Please note that the play.sh script is designed to simulate the interaction between the server and clients in a controlled environment for testing and demonstration purposes.
+Once these steps are completed, the project will be up and running and ready to be used.
+
+## Project Structure
+The project is organized as follows:
 
 ```
 + images
-  ---+postgres
-      ---------file: Dockerfile
-      ---------file: init.sql
-      ---------file: postgres.env
-  ---+cnode
-      ---------file: Dockerfile
+|---+postgres
+|------Dockerfile
+|------init.sql
+|------postgres.env
+|---+cnode
+|------Dockerfile
 + source
-  ---+connprotocol
-      ---------file: Client.h
-      ---------file: ClientHandler.h
-      ---------file: TCPServer.h
-  ---+fifo
-      ---------files:.....
-  ---+loggers
-      ---------files:.....
-  ---+postgresql
-      ---------files:.....
-  ---+socket
-      ---------files:.....
-  ---+utils
-      ---------files:.....
+|---+connprotocol
+|------Client.h
+|------ClientHandler.h
+|------TCPServer.h
+|---+fifo
+|------...
+|---+loggers
+|------.....
+|---+postgresql
+|------.....
+|---+socket
+|------.....
+|---+utils
+|------.....
 + myClient
-  ---file: MyClient.h (estende Client.h)
-+ MyServer 
-  ---file: MyServer.h (estende TCPServer.h)
-  ---file: MyClientHandler (estende clientHandler.h)
+|--- MyClient.h (extends Client.h)
++ myServer 
+|--- MyServer.h (extends TCPServer.h)
+|--- MyClientHandler (extends ClientHandler.h)
 + scripts
-  ---file: build.sh (si occupa della costruzione e eliminazione delle immagini e dei volumi)
-  ---file: run.sh (si occupa della costruzione e dell'avvio dei container e della rete Docker del progetto)
-  ---file: play.sh (uno scenario di gioco con il progetto)
+|--- build.sh (handles the building and removal of images and volumes)
+|--- run.sh (handles the building and running of containers and the Docker network for the project)
+|--- play.sh (a game scenario with the project)
 ```
 
-## Istruzioni per l'esecuzione
+## Setting Up CLion for Development
+To configure CLion for development, follow these additional steps:
 
-Per eseguire il progetto, seguire i seguenti passaggi:
+1. Ensure that the Docker images are built by executing the command `./scripts/build.sh dev`.
+2. Open CLion and go to "Settings" -> "Build, Execution, Deployment" -> "Toolchains" and add two Docker toolchains, one for the client and one for the server.
+3. For both the server and client, select the respective Docker image ("clientdebug" or "serverdebug") in the toolchain settings. In the "Container settings" input text, enter "-h clientDebug --network mynet" for the client and "-h serverDebug --network mynet" for the server.
+4. Select Docker GDB as the debugger.
+5. Create Run/Debug configurations by clicking on the drop-down next to the green hammer icon. Select "Edit Configurations" and add two "CMake Application" configurations.
+6. In the "Target" and "Executable" fields, select "client" or "server" respectively. In the "Program arguments" field
 
-1. Assicurarsi di avere CMake e Docker installati sul proprio sistema.
-2. Clonare il repository del progetto sul proprio computer.
-3. Aprire un terminale e posizionarsi nella directory del progetto.
+, enter "serverDebug 5000" for both the server and client.
+7. Optionally, you can install the Docker plugin for CLion, but it is not necessary.
 
-### Costruzione delle immagini Docker
-
-4. Eseguire lo script `build.sh` nella cartella `scripts`. Questo script si occuperà di costruire le immagini Docker necessarie per il progetto, come specificato nei rispettivi Dockerfile.
-
-### Avvio del progetto
-
-5. Eseguire lo script `run.sh` nella cartella `scripts`. Questo script si occuperà di costruire e avviare i container Docker necessari per il progetto, oltre a creare la rete Docker appropriata.
-
-### Scenario di gioco
-
-6. Facoltativamente, è possibile eseguire lo script `play.sh` nella cartella `scripts` per avviare uno scenario di gioco predefinito con il progetto.
-
-Una volta completati questi passaggi, il progetto sarà in esecuzione e pronto per essere utilizzato.
-
-## Conclusioni
-
-Questo readme fornisce una breve panoramica del progetto, descrive la sua struttura e offre istruzioni per l'esecuzione utilizzando C++, CMake e Docker. Assicurarsi di seguire attentamente le istruzioni per garantire il corretto funzionamento del progetto. In caso di problemi o domande, consultare la documentazione o contattare il team di sviluppo del progetto.
+Make sure to follow the instructions carefully to ensure the proper functioning of the project. If you encounter any issues or have questions, refer to the documentation or contact the project's development team.

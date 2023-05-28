@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-#run this script from vvProject folder: ./scripts/run.sh [dev | deploy [numberOfCnode] ]
+# Script for running and managing containers of the vvProject.
+# Run this script from the vvProject folder: ./scripts/run.sh [dev | deploy [numberOfCnode]]
 
 dev="dev"
 deploy="deploy"
@@ -10,96 +11,91 @@ postgresContName="pdb"
 postgresVolName="data"
 cnodeContName="cnode"
 netName="mynet"
-start_time=$(date +%s.%N)
 
-# Esegui l'operazione
-# Sostituisci questa parte con l'azione che desideri eseguire
-#echo "Eseguo l'operazione..."
-#sleep 3
+# Execute the operation
+# Replace this part with the action you want to perform
+# echo "Performing the operation..."
+# sleep 3
 #
-## Calcola il tempo di esecuzione
-#end_time=$(date +%s.%N)
-#execution_time=$(echo "$end_time - $start_time" | awk '{printf "%.3f", $1}')
+# # Calculate execution time
+# end_time=$(date +%s.%N)
+# execution_time=$(echo "$end_time - $start_time" | awk '{printf "%.3f", $1}')
 #
-## Stampa il tempo di esecuzione
-echo "execution time: $execution_time seconds"
+# # Print execution time
+# echo "execution time: $execution_time seconds"
 
 createNetworkIfNotExist(){
-if ! docker network ls | awk -v parametro="$1" '$3==parametro {print $3}' | grep -q .
-then
-  echo "creating network ${netName}... "
-  docker network create $1
-fi
+    if ! docker network ls | awk -v parametro="$1" '$3==parametro {print $3}' | grep -q .
+    then
+        echo "Creating network ${netName}..."
+        docker network create $1
+    fi
 }
 
 deleteNetworkIfExist(){
-  if  docker network ls | awk -v parametro="$1" '$3==parametro {print $3}' | grep -q .
-  then
-    echo "deleting network ${netName}.."
-    docker network rm $1
-  fi
-
+    if docker network ls | awk -v parametro="$1" '$3==parametro {print $3}' | grep -q .
+    then
+        echo "Deleting network ${netName}.."
+        docker network rm $1
+    fi
 }
 
 stopContainerBeginWith(){
-  echo "stopping $cnodeContName* containers..."
+    echo "Stopping $cnodeContName* containers..."
 
-  container_ids=$(docker ps -aq --filter "name=$1*")
+    container_ids=$(docker ps -aq --filter "name=$1*")
 
-  # Controlla se ci sono container da stoppare
-  if [ -n "$container_ids" ]; then
-      # Stoppa i container
-      docker stop $container_ids
-      echo "Container stoppati con successo."
-  else
-      echo "Nessun container corrispondente al nome trovato."
-  fi
+    # Check if there are containers to stop
+    if [ -n "$container_ids" ]; then
+        # Stop the containers
+        docker stop $container_ids
+        echo "Containers stopped successfully."
+    else
+        echo "No containers matching the name found."
+    fi
 }
 
 if [ $# -lt 1 ]; then
-  echo "Must specified at least one of the following set of option: [ {dev} | {deploy}, {clean [dev | deploy]} ]."
-  exit 1
+    echo "Must specify at least one of the following options: [ {dev} | {deploy}, {clean [dev | deploy]} ]."
+    exit 1
 fi
 
 if [ $1 == dev ]; then
-    #create network if don't exists
+    # Create network if it doesn't exist
     createNetworkIfNotExist ${netName}
-    echo "starting ${postgresContName} container..."
-    docker run --rm -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName pdb
+    echo "Starting ${postgresContName} container..."
+    docker run --rm -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName  -v "$postgresVolName:/var/lib/postgres/data" pdb
     echo "execution time: $execution_time seconds"
 
-elif [ $1 == deploy ];  then
-   #create network if don't exists
+elif [ $1 == deploy ]; then
+    # Create network if it doesn't exist
     createNetworkIfNotExist ${netName}
 
-  echo "creating and starting containers.... "
-    docker run --rm -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName pdb
-      echo "parm num $#"
-      if [ "$#" -ge 2 ];
-      then
-        for((i=0;i<$2;i++)); do
-          echo "starting $cnodeContName$i ..."
-          docker run -d --rm --network $netName --name $cnodeContName$i -h $cnodeContName$i cnode
+    echo "Creating and starting containers...."
+    docker run --rm -d --network $netName -e POSTGRES_PASSWORD=password --name $postgresContName  -v "$postgresVolName:/var/lib/postgres/data" pdb
+    echo "parm num $#"
+    if [ "$#" -ge 2 ]; then
+        for ((i=0;i<$2;i++)); do
+            echo "Starting $cnodeContName$i ..."
+            docker run -d --rm --network $netName --name $cnodeContName$i -h $cnodeContName$i cnode
         done
-      else
-          docker run -d --rm --network $netName --name $cnodeContName0 -h $cnodeContName0 cnode
-      fi
-
+    else
+        docker run -d --rm --network $netName --name $cnodeContName0 -h $cnodeContName0 cnode
+    fi
 
 elif [ $1 == "$clean" ]; then
-  if [ $# -lt 2 ]; then
-    echo "Must specified at least one of the following set of parameter for clean option: nodes | all ]."
-    exit 1
-  fi
-  if [ $2 == nodes ]; then
-    stopContainerBeginWith $cnodeContName
-  elif [ $2 == all ];  then
-    stopContainerBeginWith $cnodeContName
-    echo "stopping $postgresContName container"
-    docker container stop $postgresContName
-    deleteNetworkIfExist $netName
-  fi
+    if [ $# -lt 2 ]; then
+        echo "Must specify at least one of the following set of parameters for the clean option: nodes | all."
+        exit 1
+    fi
+    if [ $2 == nodes ]; then
+        stopContainerBeginWith $cnodeContName
+    elif [ $2 == all ]; then
+        stopContainerBeginWith $cnodeContName
+        echo "Stopping $postgresContName container"
+        docker container stop $postgresContName
+        deleteNetworkIfExist $netName
+    fi
 fi
 
-
-#associa container a network
+# Associate containers with network
